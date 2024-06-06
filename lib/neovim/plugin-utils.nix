@@ -55,5 +55,5 @@ in rec {
     });
 
   pack = plugins:
-    pkgs.linkFarm "neovim-plugins" (map (plugin: packagePlugin plugins) plugins);
+    pkgs.linkFarm "neovim-plugins" (map (plugin: packagePlugin plugin) plugins);
 }
