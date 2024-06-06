@@ -1,0 +1,3 @@
+{nixpkgs, ...}: {
+  mkNeovim = import ./neovim;
+}
