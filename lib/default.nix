@@ -6,5 +6,5 @@
   mkNeovim = import ./neovim {
     inherit nix-colors;
   };
-  lua-utils = import ./utils/lua-utils.nix {inherit nixpkgs;};
+  lua-utils = import ./utils/lua-utils.nix {pkgs = nixpkgs;};
 }
