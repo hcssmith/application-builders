@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{nix-colors}: {
+  pkgs,
   neovim,
   extraPackages,
   config,
@@ -9,15 +10,17 @@
   lsp-utils = import ./lsp-utils.nix {inherit pkgs;};
   lua-utils = import ../utils/lua-utils.nix {inherit pkgs;};
   plugin-utils = import ./plugin-utils.nix {inherit pkgs;};
+  nix-colors-lib = nix-colors.lib.contrib {inherit pkgs;};
 
   inherit (autogroup-utils) makeAutogroups makeAutoCmds;
   inherit (keymap-utils) makeKeymap;
   inherit (lsp-utils) setupLsp;
   inherit (lua-utils) toLuaObject;
+  inherit (nix-colors-lib) vimThemeFromScheme;
   inherit (plugin-utils) pack;
 
   mkConfig = {
-    colourscheme ? "darkblue",
+    colourscheme ? "chalk",
     plugins ? [],
     keymaps ? [],
     autogroups ? [],
@@ -26,9 +29,12 @@
     globals ? {},
     opts ? {},
     ...
-  }:
+  }: let
+    colourScheme = nix-colors.colorSchemes.${colourscheme};
+    finalPlugins = plugins ++ [{pkg = vimThemeFromScheme {scheme = colourScheme;};}];
+  in
     pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" [
-      "vim.opt.packpath = '${pack plugins}'"
+      "vim.opt.packpath = '${pack finalPlugins}'"
       (makeAutogroups autogroups)
       (makeAutoCmds autocmds)
       (builtins.concatStringsSep "\n" (pkgs.lib.mapAttrsToList (name: value: "vim.g['${name}'] = ${toLuaObject value}") globals))
@@ -38,7 +44,7 @@
       "vim.opt.runtimepath:remove(vim.fn.stdpath('config'))"
       "vim.opt.runtimepath:remove(vim.fn.stdpath('config'))"
       "vim.opt.runtimepath:remove(vim.fn.stdpath('data') .. '/site')"
-      "vim.cmd[[colorscheme ${colourscheme}]]"
+      "vim.cmd[[colorscheme nix-${colourScheme.slug}]]"
     ]);
 in
   pkgs.runCommand "${neovim.meta.mainProgram}" {

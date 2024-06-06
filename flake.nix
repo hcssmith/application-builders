@@ -3,9 +3,14 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nix-colors.url = "github:misterio77/nix-colors";
   };
 
-  outputs = {nixpkgs, ...}: {
-    lib = import ./lib {inherit nixpkgs;};
+  outputs = {
+    nixpkgs,
+    nix-colors,
+    ...
+  }: {
+    lib = import ./lib {inherit nixpkgs nix-colors;};
   };
 }
