@@ -13,7 +13,7 @@ in rec {
       if optional
       then "pack/${pkg.name}/opt/${pkg.name}"
       else "pack/${pkg.name}/start/${pkg.name}";
-    path = pkgs.symLinkJoin {
+    path = pkgs.symlinkJoin {
       name = pkg.name;
       paths = [pkg (setupPlugin args)];
     };
