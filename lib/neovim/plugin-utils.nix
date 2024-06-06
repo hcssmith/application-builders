@@ -2,7 +2,7 @@
   lua-utils = import ../utils/lua-utils.nix {inherit pkgs;};
   keymap-utils = import ./keymap-utils.nix {inherit pkgs;};
   inherit (lua-utils) toLuaObject;
-  inherit (keymap-utils) makeKeymaps;
+  inherit (keymap-utils) makeKeymap;
 in rec {
   packagePlugin = {
     pkg,
@@ -15,9 +15,28 @@ in rec {
       else "pack/${pkg.name}/start/${pkg.name}";
     path = pkgs.symlinkJoin {
       name = pkg.name;
-      paths = [pkg (setupPlugin args)];
+      paths = pkgs.lib.flatten [
+        pkg
+        (
+          if (setupRequired args)
+          then (setupPlugin args)
+          else []
+        )
+      ];
     };
   };
+
+  setupRequired = {
+    name ? "",
+    extraConfigPre ? "",
+    extraConfig ? "",
+    extraConfigVim ? "",
+    keymaps ? [],
+    ...
+  }:
+    if (name != "" || extraConfigPre != "" || extraConfig != "" || extraConfigVim != "" || (builtins.length keymaps) > 0)
+    then true
+    else false;
 
   setupPlugin = {
     pkg,
@@ -30,8 +49,8 @@ in rec {
     ...
   }:
     pkgs.stdenv.mkDerivation (finalAttrs: rec {
-      pname = "${name}-setup";
-      version = pkg.version;
+      pname = "${pkg.name}-setup";
+      version = "${pkg.version}";
       dontUnpack = true;
       buildPhases = ["installPhase"];
       setup = pkgs.writeText "${pname}-${version}" (builtins.concatStringsSep "\n" [
@@ -47,14 +66,15 @@ in rec {
           extraConfigVim
           "]]"
         ])
-        (makeKeymaps keymaps)
+        (makeKeymap keymaps)
       ]);
       installPhase = ''
-        mkdir -p $out
+        mkdir -p $out/plugin
         cp $setup $out/plugin/${pname}-${version}.lua
       '';
     });
 
   pack = plugins:
-    pkgs.linkFarm "neovim-plugins" (map (plugin: packagePlugin plugin) plugins);
+    pkgs.linkFarm "neovim-plugins" ((map (plugin: packagePlugin plugin) plugins)
+      ++ (map (plugin: packagePlugin plugin) (builtins.concatMap ({deps ? [], ...}: deps) plugins)));
 }
