@@ -7,6 +7,7 @@ in rec {
   packagePlugin = {
     pkg,
     optional ? false,
+    ...
   } @ args: {
     name =
       if optional
