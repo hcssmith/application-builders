@@ -64,4 +64,18 @@ in rec {
       ''
     ])
   );
+
+  lspPlugins = with pkgs.vimPlugins; [
+    {pkg = none-ls-nvim;}
+    {pkg = nvim-lspconfig;}
+    {
+      pkg = lspsaga-nvim;
+      name = "lspsaga";
+      opts = {
+        symbol_in_winbar.enable = false;
+      };
+    }
+    {pkg = lsp_signature-nvim;}
+    {pkg = lspkind-nvim;}
+  ];
 }

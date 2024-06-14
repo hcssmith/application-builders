@@ -15,11 +15,13 @@
 
   inherit (autogroup-utils) makeAutogroups makeAutoCmds;
   inherit (keymap-utils) makeKeymap;
-  inherit (lsp-utils) setupLsp;
+  inherit (lsp-utils) setupLsp lspPlugins;
   inherit (lua-utils) toLuaObject;
   inherit (nix-colors-lib) vimThemeFromScheme;
   inherit (plugin-utils) pack;
   inherit (tree-sitter) grammarsToPlugins makeTSConfig gtp;
+
+  lspPackages = map (server: server.package) config.lsp.servers;
 
   finalPackages = with pkgs;
     [
@@ -27,7 +29,8 @@
       ripgrep
       fswatch
     ]
-    ++ extraPackages;
+    ++ extraPackages
+    ++ lspPackages;
 
   mkConfig = {
     colourscheme ? "chalk",
@@ -47,7 +50,7 @@
       ++ (grammarsToPlugins treesitter.extra_grammars)
       ++ (map (g: {pkg = gtp g;}) pkgs.vimPlugins.nvim-treesitter.allGrammars);
     ts_plugins = [(makeTSConfig treesitter.config or {})] ++ ts_grammars;
-    finalPlugins = plugins ++ [{pkg = vimThemeFromScheme {scheme = colourScheme;};}] ++ ts_plugins;
+    finalPlugins = plugins ++ [{pkg = vimThemeFromScheme {scheme = colourScheme;};}] ++ ts_plugins ++ lspPlugins;
   in
     pkgs.writeText "init.lua" (builtins.concatStringsSep "\n" [
       "vim.opt.packpath = '${pack finalPlugins}'"
