@@ -103,7 +103,7 @@
       theme
     ]);
 in
-  pkgs.runCommand "tmux" {
+  pkgs.runCommand tmux.meta.mainProgram {
     nativeBuildInputs = with pkgs; [
       makeWrapper
     ];

@@ -66,7 +66,7 @@
       "vim.cmd[[colorscheme nix-${colourScheme.slug}]]"
     ]);
 in
-  pkgs.runCommand "${neovim.meta.mainProgram}" {
+  pkgs.runCommand neovim.meta.mainProgram {
     nativeBuildInputs = with pkgs; [
       makeWrapper
     ];

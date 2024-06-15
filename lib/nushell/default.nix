@@ -32,7 +32,7 @@
       appFunctions
     ]);
 in
-  pkgs.runCommand "nu"
+  pkgs.runCommand nushell.meta.mainProgram
   {
     nativeBuildInputs = with pkgs; [
       makeWrapper
