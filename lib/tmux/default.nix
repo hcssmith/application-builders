@@ -9,6 +9,7 @@
     colourscheme ? "katy",
     hsplit ? "|",
     vsplit ? "-",
+    shell ? "nu",
     ...
   }: let
     colourScheme = nix-colors.colorSchemes.${colourscheme};
@@ -101,6 +102,7 @@
       "set -g mouse on"
       nvimIntegration
       theme
+      "set -g default-command 'exec ${shell}'"
     ]);
 in
   pkgs.runCommand tmux.meta.mainProgram {
