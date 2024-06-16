@@ -25,3 +25,7 @@ def "src commit" [
 def "src push" [] {
 	git push -u origin master
 }
+
+def "src log" [] {
+	git log | jc --git-log | from json
+}
