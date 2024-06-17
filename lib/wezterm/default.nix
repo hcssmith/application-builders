@@ -18,6 +18,7 @@
       "'FiraCode Mono',"
       "}"
       "config.default_prog = {'${shell}'}"
+      "config.window_background_opacity = 0.7"
       "return config"
     ]);
 in
