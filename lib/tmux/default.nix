@@ -32,26 +32,28 @@
     base0F = colourScheme.palette.base0F;
 
     theme = ''
-      set -g pane-border-style 'fg=#${base00}'
-      set -g pane-active-border-style 'fg=#${base01}'
-      set -g status-position top
-      set -g status-justify absolute-centre
-      set -g status-style 'bg=#${base02} fg=#${base05}'
-      set -g status-right '%Y-%m-%d %H:%M '
-      set -g status-right-length 50
-      set -g status-left-length 10
-      setw -g window-status-current-style 'fg=#${base01} bg=#${base05}'
-      setw -g window-status-current-format ' #I #W #F '
+         set -g pane-border-style 'fg=#${base00}'
+         set -g pane-active-border-style 'fg=#${base01}'
+         set -g status-position top
+         set -g status-justify absolute-centre
+         set -g status-style 'bg=default fg=#${base05}'
+      set -g message-style 'bg=default'
+         set -g status-right ' '
+         set -g status-left ' '
+         set -g status-right-length 50
+         set -g status-left-length 10
+         setw -g window-status-current-style 'fg=#${base01} bg=#${base05}'
+         setw -g window-status-current-format ' #I #W #F '
 
-      setw -g window-status-style 'fg=#${base00} dim'
-      setw -g window-status-format ' #I #[fg=#${base07}]#W #[fg=#${base00}]#F '
+         setw -g window-status-style 'fg=#${base05} dim'
+         setw -g window-status-format ' #I #[fg=#${base07}]#W #[fg=#${base00}]#F '
 
-      # Start windows and panes index at 1, not 0.
-      set -g base-index 1
-      setw -g pane-base-index 1
+         # Start windows and panes index at 1, not 0.
+         set -g base-index 1
+         setw -g pane-base-index 1
 
-      # Ensure window index numbers get reordered on delete.
-      set-option -g renumber-windows on
+         # Ensure window index numbers get reordered on delete.
+         set-option -g renumber-windows on
     '';
 
     normalise = p:
@@ -92,18 +94,21 @@
       bind-key -T copy-mode-vi 'C-right' select-pane -R
     '';
   in
-    pkgs.writeText "tmux.conf" (builtins.concatStringsSep "\n" [
+    pkgs.writeText "tmux.conf" (builtins.concatStringsSep "\n" (pkgs.lib.flatten [
       "unbind C-b"
       (setPrefix prefix)
       "unbind %"
       "unbind '\"'"
       "bind ${hsplit} split-window -h"
       "bind ${vsplit} split-window -v"
+      "bind -n C-t new-window"
+      "bind -n C-w kill-window"
+      (map (id: "bind-key -n M-${builtins.toString id} select-window -t ${builtins.toString id}") (pkgs.lib.range 1 9))
       "set -g mouse on"
       nvimIntegration
       theme
       "set -g default-command 'exec ${shell}'"
-    ]);
+    ]));
 in
   pkgs.runCommand tmux.meta.mainProgram {
     nativeBuildInputs = with pkgs; [
