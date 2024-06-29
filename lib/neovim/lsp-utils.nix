@@ -22,6 +22,7 @@ in rec {
 
   mkServerConfig = {
     server_name,
+    cmd ? null,
     settings ? {},
     on_attach ? null,
     capabilities ? null,
@@ -37,7 +38,9 @@ in rec {
       then _capabilities
       else capabilities;
     srv_config =
-      toLuaObject {
+      let 
+				_cmd = if (builtins.isNull cmd) then {} else {cmd = cmd;};  
+			in toLuaObject {
         name = name;
         extraOptions =
           {
@@ -46,7 +49,7 @@ in rec {
           // {
             on_attach = on_attach_func;
             capabilities = capabilities_func;
-          };
+          } // _cmd;
       }
       + ",";
   };
