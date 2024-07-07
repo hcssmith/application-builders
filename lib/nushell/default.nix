@@ -5,30 +5,29 @@
   extraPackages,
   ...
 }: let
-  configOptions = {showBanner ? false, ...}:
-    builtins.concatStringsSep "\n" [
-      "show_banner: ${
-        if showBanner
-        then "true"
-        else "false"
-      }"
-      "keybindings: ["
-      "{"
-      "name: select_project"
-      "modifier: control"
-      "keycode: char_p"
-      "mode: emacs"
-      "event: {"
-      "send: executehostcommand,"
-      "cmd: \"ls /home/hcssmith/Projects -s | where type == 'dir' | get name | to text | fzf --height 60% --layout reverse --border --tmux | cd $'/home/hcssmith/Projects/($in)'\""
-      "}"
-      "}"
-      "]"
-    ];
+  configOptions = {showBanner ? false}: let
+    genYAML = pkgs.lib.generators.toYAML {};
+  in
+    genYAML {
+      show_banner = showBanner;
+      keybindings = [
+        {
+          name = "select_project";
+          modifier = "control";
+          keycode = "char_p";
+          mode = "emacs";
+          event = {
+            send = "executehostcommand";
+            cmd = "ls /home/hcssmith/Projects -s | where type == 'dir' | get name | to text | fzf --height 60% --layout reverse --border --tmux | cd $'/home/hcssmith/Projects/($in)'";
+          };
+        }
+      ];
+    };
 
   finalPackages =
     extraPackages
     ++ [
+      pkgs.fzf
       pkgs.fh
     ];
 
@@ -38,9 +37,7 @@
 
   mkConfig = config:
     pkgs.writeText "nu.conf" (builtins.concatStringsSep "\n" [
-      "$env.config = {"
-      (configOptions config)
-      "}"
+      "$env.config = ${configOptions config}"
       srcFunctions
       appFunctions
       moveFunctions
