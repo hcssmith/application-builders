@@ -22,6 +22,7 @@
 
   srcFunctions = builtins.readFile ./src_functions.nu;
   appFunctions = builtins.readFile ./app_functions.nu;
+  moveFunctions = builtins.readFile ./move_functions.nu;
 
   mkConfig = config:
     pkgs.writeText "nu.conf" (builtins.concatStringsSep "\n" [
@@ -30,6 +31,7 @@
       "}"
       srcFunctions
       appFunctions
+      moveFunctions
     ]);
 in
   pkgs.runCommand nushell.meta.mainProgram
