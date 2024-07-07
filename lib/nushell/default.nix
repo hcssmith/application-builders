@@ -12,6 +12,18 @@
         then "true"
         else "false"
       }"
+      "keybindings: ["
+      "{"
+      "name: select_project"
+      "modifier: control"
+      "keycode: char_p"
+      "mode: emacs"
+      "event: {"
+      "send: executehostcommand,"
+      "cmd: \"ls /home/hcssmith/Projects -s | where type == 'dir' | get name | to text | fzf --height 60% --layout reverse --border --tmux | cd $'/home/hcssmith/Projects/($in)'\""
+      "}"
+      "}"
+      "]"
     ];
 
   finalPackages =
