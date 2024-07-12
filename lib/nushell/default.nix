@@ -1,47 +1,35 @@
 {nix-colors}: {
   pkgs,
   nushell ? pkgs.nushell,
-  config,
-  extraPackages,
+  config ? {},
+  env ? {},
+  keybindings ? [],
+  includes ? [],
+  extraPackages ? [],
   ...
 }: let
-  configOptions = {showBanner ? false}: let
+  buildConfig = {
+    config ? {},
+    keybindings ? [],
+    ...
+  }: let
     genYAML = pkgs.lib.generators.toYAML {};
   in
-    genYAML {
-      show_banner = showBanner;
-      keybindings = [
-        {
-          name = "select_project";
-          modifier = "control";
-          keycode = "char_p";
-          mode = "emacs";
-          event = {
-            send = "executehostcommand";
-            cmd = "ls /home/hcssmith/Projects -s | where type == 'dir' | get name | to text | fzf --height 60% --layout reverse --border --tmux | cd $'/home/hcssmith/Projects/($in)'";
-          };
-        }
-      ];
-    };
+    genYAML ({
+        inherit keybindings;
+      }
+      // config);
 
-  finalPackages =
-    extraPackages
-    ++ [
-      pkgs.fzf
-      pkgs.fh
-    ];
+  finalPackages = extraPackages;
 
-  srcFunctions = builtins.readFile ./src_functions.nu;
-  appFunctions = builtins.readFile ./app_functions.nu;
-  moveFunctions = builtins.readFile ./move_functions.nu;
-
-  mkConfig = config:
-    pkgs.writeText "nu.conf" (builtins.concatStringsSep "\n" [
-      "$env.config = ${configOptions config}"
-      srcFunctions
-      appFunctions
-      moveFunctions
-    ]);
+  mkConfigFile = config:
+    pkgs.writeText "nu.conf" (
+      builtins.concatStringsSep "\n" (pkgs.lib.flatten [
+        "$env.config = ${buildConfig config}"
+        (map (file: builtins.readFile file) includes)
+        (pkgs.lib.mapAttrsToList (name: value: "$env.${name} = '${value}'") env)
+      ])
+    );
 in
   pkgs.runCommand nushell.meta.mainProgram
   {
@@ -52,6 +40,6 @@ in
   ''
      mkdir -p $out/bin
      makeWrapper ${nushell}/bin/nu $out/bin/nu \
-    --add-flags "--config ${mkConfig config}" \
+    --add-flags "--config ${mkConfigFile {inherit config keybindings;}}" \
     --prefix PATH : ${pkgs.lib.makeBinPath finalPackages}
   ''
