@@ -18,7 +18,7 @@
       "'FiraCode Mono',"
       "}"
       "config.default_prog = {'${shell}'}"
-      "front_end=\"WebGpu\""
+      "config.front_end=\"WebGpu\""
       "config.window_background_opacity = 0.7"
       "return config"
     ]);
